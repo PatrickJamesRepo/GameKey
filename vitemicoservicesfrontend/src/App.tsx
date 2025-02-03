@@ -1,35 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Buffer } from 'buffer';
 import { Address, BaseAddress } from '@emurgo/cardano-serialization-lib-browser';
+import Sidebar from './components/Sidebar';
+import AssetGrid from './components/AssetGrid';
+import useTheme from "./hooks/useTheme";
+import './App.css';
+
 
 const App: React.FC = () => {
-    const [authMethod, setAuthMethod] = useState('base_address');
+    const { theme, toggleTheme } = useTheme(); // Use theme hook
+
     const [wallet, setWallet] = useState<any>(null);
+    const [walletBaseAddress, setWalletBaseAddress] = useState<string | null>(null);
+    const [walletType, setWalletType] = useState<string | null>(null);
+    const [jwtToken, setJwtToken] = useState<string | null>(null);
+    const [availableWallets, setAvailableWallets] = useState<string[]>([]);
+    const [step, setStep] = useState<number>(1);
+
+    // ADA Handle & PCS Collection Selection
+    const [authMethod, setAuthMethod] = useState<'base_address' | 'ada_handle' | 'pcs'>('base_address');
     const [adahandleSelected, setAdahandleSelected] = useState<string | null>(null);
     const [adahandles, setAdahandles] = useState<string[]>([]);
-    const [walletBaseAddress, setWalletBaseAddress] = useState<string | null>(null);
-    const [jwtToken, setJwtToken] = useState<string | null>(null);
-    const [walletType, setWalletType] = useState<string | null>(null); // Store the selected wallet type
-    const [availableWallets, setAvailableWallets] = useState<string[]>([]); // To store available wallets
-    const [step, setStep] = useState(1); // Step control for the flow
-    const [dropdownVisible, setDropdownVisible] = useState(false); // State to toggle dropdown visibility
+    const [pcsCollectionSelected, setPcsCollectionSelected] = useState<string | null>(null);
 
-    // Wallet detection logic
+    // Hardcoded PCS Collections (same as backend)
+    const PCS_COLLECTIONS = [
+        { id: "f96584c4fcd13cd1702c9be683400072dd1aac853431c99037a3ab1e", name: "OG Collection" },
+        { id: "d91b5642303693f5e7a188748bfd1a26c925a1c5e382e19a13dd263c", name: "Yummi" },
+        { id: "52f53a3eb07121fcbec36dae79f76abedc6f3a877f8c8857e6c204d1", name: "Halloween" }
+    ];
+
+    // Asset & Metadata State
+    const [loading, setLoading] = useState<boolean>(false);
+    const [walletData, setWalletData] = useState<any>(null);
+
+    // Detect Available Wallets
     const detectWallet = async () => {
         const detectedWallets: string[] = [];
-
         if (window.cardano) {
-            if (window.cardano.nami) {
-                detectedWallets.push('nami');
-            }
-            if (window.cardano.flint) {
-                detectedWallets.push('flint');
-            }
+            if (window.cardano.nami) detectedWallets.push('nami');
+            if (window.cardano.flint) detectedWallets.push('flint');
 
             if (detectedWallets.length > 0) {
                 setAvailableWallets(detectedWallets);
-                alert(`Available Wallets: ${detectedWallets.join(', ')}`);
-                setStep(2); // Move to the next step (Select Wallet)
+                setStep(2);
             } else {
                 alert('No compatible wallet found!');
             }
@@ -38,11 +52,16 @@ const App: React.FC = () => {
         }
     };
 
+    // Connect Wallet
     const connect = async (walletType: string) => {
         try {
             let walletInstance;
             if (walletType === 'nami') {
-                walletInstance = await window.cardano.nami.enable();
+                if ("nami" in window.cardano) {
+                    if ("enable" in window.cardano.nami) {
+                        walletInstance = await window.cardano.nami.enable();
+                    }
+                }
             } else if (walletType === 'flint') {
                 walletInstance = await window.cardano.flint.enable();
             }
@@ -54,29 +73,24 @@ const App: React.FC = () => {
             const addressHex = Buffer.from(addresses[0], 'hex');
             const address = BaseAddress.from_address(Address.from_bytes(addressHex)).to_address();
             const baseAddress = address.to_bech32();
-
             setWalletBaseAddress(baseAddress);
+            setStep(3);
 
-            // Fetch Ada handles from the backend
-            const response = await fetch(
-                `http://localhost:8080/auth/adahandles?base_address=${baseAddress}`,
-                {
-                    headers: {
-                        Accept: 'application/json',
-                        'Content-Type': 'application/json',
-                    },
-                }
-            );
+            // Fetch ADA Handles
+            const response = await fetch(`http://localhost:8080/auth/adahandles?base_address=${baseAddress}`, {
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+            });
             const handles = await response.json();
             setAdahandles(handles);
 
-            setStep(3); // Move to the next step (Login)
-
+            // Default PCS Selection
+            setPcsCollectionSelected(PCS_COLLECTIONS[0].id);
         } catch (error) {
             console.error('Failed to connect to wallet:', error);
         }
     };
 
+    // Login (JWT Auth)
     const login = async () => {
         if (!walletBaseAddress) {
             alert('Please connect your wallet first.');
@@ -84,172 +98,98 @@ const App: React.FC = () => {
         }
         try {
             let messageToSign;
+            let endpoint = `http://localhost:8080/auth/nonce?base_address=${walletBaseAddress}`;
 
-            if (authMethod === 'base_address') {
-                const res = await fetch(
-                    `http://localhost:8080/auth/nonce?base_address=${walletBaseAddress}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                messageToSign = await res.text();
-            } else if (authMethod === 'ada_handle') {
-                const res = await fetch(
-                    `http://localhost:8080/auth/nonce?base_address=${walletBaseAddress}&ada_handle=${adahandleSelected}`,
-                    {
-                        method: 'GET',
-                        headers: {
-                            Accept: 'application/json',
-                            'Content-Type': 'application/json',
-                        },
-                    }
-                );
-                messageToSign = await res.text();
+            if (authMethod === 'ada_handle') {
+                if (!adahandleSelected) {
+                    alert('Select an ADA Handle');
+                    return;
+                }
+                endpoint += `&ada_handle=${adahandleSelected}`;
+            } else if (authMethod === 'pcs') {
+                if (!pcsCollectionSelected) {
+                    alert('Select a PCS Collection');
+                    return;
+                }
+                endpoint += `&pcs=${pcsCollectionSelected}`;
             }
 
+            const res = await fetch(endpoint, { method: 'GET', headers: { Accept: 'application/json', 'Content-Type': 'application/json' } });
+            messageToSign = await res.text();
+
             const addresses = await wallet.getUsedAddresses();
+            const signedData = await wallet.signData(addresses[0], Buffer.from(messageToSign).toString('hex'));
 
-            // Sign the message with the wallet
-            const signedData = await wallet.signData(
-                addresses[0],
-                Buffer.from(messageToSign).toString('hex')
-            );
-
-            // Send the signed data to the backend to log in
-            const res = await fetch('http://localhost:8080/auth/login', {
+            const loginRes = await fetch('http://localhost:8080/auth/login', {
                 method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    data_signature: JSON.stringify(signedData),
-                }),
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data_signature: JSON.stringify(signedData) }),
             });
 
-            const jwt = await res.text();
+            const jwt = await loginRes.text();
             setJwtToken(jwt);
-
-            setStep(4); // Move to the next step (Endpoints Interaction)
-
+            setStep(4);
         } catch (error) {
             console.error('Login failed:', error);
         }
     };
 
-    const invoke = async (path: string) => {
+    // Fetch Wallet Data & Assets
+    const fetchWalletData = async () => {
+        if (!walletBaseAddress) {
+            alert('Connect your wallet first.');
+            return;
+        }
+        setLoading(true);
         try {
-            const headers: HeadersInit = jwtToken
-                ? {
-                    Authorization: `Bearer ${jwtToken}`,
-                }
-                : {};
-
-            const res = await fetch(`http://localhost:8080${path}`, {
-                method: 'GET',
-                headers,
+            const response = await fetch(`http://localhost:8080/wallet/${walletBaseAddress}`, {
+                headers: { Accept: 'application/json', 'Content-Type': 'application/json', Authorization: `Bearer ${jwtToken}` },
             });
 
-            const status = res.status;
-            const txt = await res.text();
+            if (!response.ok) {
+                console.error(`Error: ${response.status}`);
+                return;
+            }
 
-            console.log('Status:', status);
-            console.log('Response:', txt);
+            const data = await response.json();
+            console.log("Fetched Wallet Data:", data);
+            setWalletData(data);
         } catch (error) {
-            console.error('Error invoking endpoint:', error);
+            console.error('Error fetching wallet data:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
+    useEffect(() => {
+        if (step === 4 && walletBaseAddress) {
+            fetchWalletData();
+        }
+    }, [step, walletBaseAddress]);
+
     return (
-        <div>
-            {/* Dropdown menu in the top right */}
-            <div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-                <button onClick={() => setDropdownVisible(!dropdownVisible)}>Wallet Actions</button>
-                {dropdownVisible && (
-                    <div
-                        style={{
-                            position: 'absolute',
-                            top: '40px',
-                            right: '0',
-                            background: 'white',
-                            border: '1px solid #ccc',
-                            padding: '10px',
-                            width: '200px',
-                        }}
-                    >
-                        {step === 1 && (
-                            <div>
-                                <button onClick={detectWallet}>Detect Wallet</button>
-                            </div>
-                        )}
-                        {step === 2 && (
-                            <div>
-                                <h3>Select Wallet:</h3>
-                                {availableWallets.map((wallet) => (
-                                    <button
-                                        key={wallet}
-                                        onClick={() => connect(wallet)}
-                                        disabled={walletType !== null}
-                                    >
-                                        Connect {wallet.charAt(0).toUpperCase() + wallet.slice(1)}
-                                    </button>
-                                ))}
-                            </div>
-                        )}
-                        {step === 3 && (
-                            <div>
-                                <div>Selected Wallet: {walletType}</div>
-                                <div>Selected Authentication Method: {authMethod}</div>
-                                <input
-                                    type="radio"
-                                    id="baseAddress"
-                                    value="base_address"
-                                    checked={authMethod === 'base_address'}
-                                    onChange={() => setAuthMethod('base_address')}
-                                />
-                                <label htmlFor="baseAddress">Base Address</label>
+        <div className="app-container">
+            <Sidebar
+                step={step}
+                availableWallets={availableWallets}
+                walletType={walletType}
+                authMethod={authMethod}
+                setAuthMethod={setAuthMethod}
+                adahandles={adahandles}
+                adahandleSelected={adahandleSelected}
+                setAdahandleSelected={setAdahandleSelected}
+                pcsCollections={PCS_COLLECTIONS} // PCS Collections restored
+                pcsCollectionSelected={pcsCollectionSelected}
+                setPcsCollectionSelected={setPcsCollectionSelected}
+                detectWallet={detectWallet}
+                connect={connect}
+                login={login}
+                theme={theme}
+                toggleTheme={toggleTheme} // ✅ Correct
+            />
 
-                                <input
-                                    type="radio"
-                                    id="adaHandle"
-                                    value="ada_handle"
-                                    checked={authMethod === 'ada_handle'}
-                                    onChange={() => setAuthMethod('ada_handle')}
-                                />
-                                <label htmlFor="adaHandle">Ada Handle</label>
-
-                                {authMethod === 'ada_handle' && (
-                                    <div>
-                                        <div>Selected Ada Handle: {adahandleSelected}</div>
-                                        <select
-                                            value={adahandleSelected || ''}
-                                            onChange={(e) => setAdahandleSelected(e.target.value)}
-                                        >
-                                            {adahandles.map((handle) => (
-                                                <option key={handle} value={handle}>
-                                                    {handle}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                )}
-                                <button onClick={login} disabled={jwtToken !== null}>
-                                    Login
-                                </button>
-                            </div>
-                        )}
-                        {step === 4 && (
-                            <div>
-                                <button onClick={() => invoke('/public/endpoint')}>Hit public endpoint</button>
-                                <button onClick={() => invoke('/secured/endpoint')}>Hit secured endpoint</button>
-                            </div>
-                        )}
-                    </div>
-                )}
+            <div className="main-content">
+                {loading ? <p>Loading assets...</p> : <AssetGrid assets={walletData?.assets || []}/>}
             </div>
         </div>
     );

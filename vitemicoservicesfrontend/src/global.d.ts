@@ -7,6 +7,7 @@ interface CardanoWallet {
 }
 
 interface Cardano {
+    flint: CardanoWallet;
     nami?: CardanoWallet;
     yoroi?: CardanoWallet;
     vespr?: CardanoWallet;

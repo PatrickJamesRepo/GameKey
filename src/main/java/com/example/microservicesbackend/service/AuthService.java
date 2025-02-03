@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Optional;
 
@@ -24,6 +25,7 @@ public class AuthService {
     private long jwtExpirationMs;
 
     private static final String ADA_HANDLE_PREFIX = "ada_handle:";
+    private static final String PCS_POLICY_IDS_PREFIX = "pcs:";
 
     /**
      * Extracts the ADA handle from the provided nonce if present.
@@ -36,12 +38,33 @@ public class AuthService {
             return Optional.ofNullable(nonce)
                     .map(n -> n.split(";"))
                     .stream()
-                    .flatMap(parts -> java.util.Arrays.stream(parts))
-                    .filter(part -> part.startsWith(ADA_HANDLE_PREFIX))
+                    .flatMap(Arrays::stream)
+                    .filter(part -> part.trim().startsWith(ADA_HANDLE_PREFIX))
                     .map(part -> part.substring(ADA_HANDLE_PREFIX.length()))
                     .findFirst();
         } catch (Exception e) {
             logger.error("Error extracting ADA handle from nonce: {}", e.getMessage());
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Extracts the PCS policy IDs from the provided nonce if present.
+     *
+     * @param nonce The nonce string.
+     * @return An Optional containing the PCS policy IDs, or empty if not found.
+     */
+    private Optional<String> extractPcsPolicyIdsFromNonce(String nonce) {
+        try {
+            return Optional.ofNullable(nonce)
+                    .map(n -> n.split(";"))
+                    .stream()
+                    .flatMap(Arrays::stream)
+                    .filter(part -> part.trim().startsWith(PCS_POLICY_IDS_PREFIX))
+                    .map(part -> part.substring(PCS_POLICY_IDS_PREFIX.length()))
+                    .findFirst();
+        } catch (Exception e) {
+            logger.error("Error extracting PCS policy IDs from nonce: {}", e.getMessage());
             return Optional.empty();
         }
     }
@@ -56,18 +79,15 @@ public class AuthService {
     public boolean verifySignature(DataSignature loginSignature, String nonce) {
         try {
             boolean isValidSignature = CIP30DataSigner.INSTANCE.verify(loginSignature);
-
             if (!isValidSignature) {
                 logger.error("Signature verification failed.");
                 return false;
             }
-
             String payload = new String(loginSignature.coseSign1().payload());
             if (!nonce.equals(payload)) {
                 logger.error("Nonce does not match payload. Expected: {}, Actual: {}", nonce, payload);
                 return false;
             }
-
             return true;
         } catch (Exception e) {
             logger.error("Error verifying signature: {}", e.getMessage(), e);
@@ -80,13 +100,14 @@ public class AuthService {
      *
      * @param baseAddress The base address of the user.
      * @param adaHandle   An Optional containing the ADA handle.
+     * @param pcsPolicyIds An Optional containing the PCS policy IDs.
      * @return An Optional containing the JWT string if successful, or empty if an error occurs.
      */
-    public Optional<String> createToken(String baseAddress, Optional<String> adaHandle) {
+    public Optional<String> createToken(String baseAddress, Optional<String> adaHandle, Optional<String> pcsPolicyIds) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(jwtSecret);
 
-            // Build the JWT
+            // Build the JWT with required claims
             com.auth0.jwt.JWTCreator.Builder jwtBuilder = JWT.create()
                     .withSubject("CardanoUser")
                     .withIssuedAt(new Date())
@@ -95,18 +116,15 @@ public class AuthService {
 
             // Add ADA handle claim if present
             adaHandle.ifPresent(handle -> jwtBuilder.withClaim("adaHandle", handle));
+            // Add PCS policy IDs claim if present
+            pcsPolicyIds.ifPresent(pcs -> jwtBuilder.withClaim("pcsPolicyIds", pcs));
 
-            // Sign and return the token
             String token = jwtBuilder.sign(algorithm);
             logger.info("Generated JWT for address: {}", baseAddress);
-
             return Optional.of(token);
-
         } catch (Exception e) {
             logger.error("Error generating JWT: {}", e.getMessage(), e);
             return Optional.empty();
         }
     }
-
-
 }

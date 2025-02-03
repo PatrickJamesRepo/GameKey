@@ -21,7 +21,9 @@ export class Cardano {
 
     async enableWallet(walletName: string | undefined): Promise<any> {
         console.log(`Attempting to enable wallet: ${walletName}`);
-        const wallet = this.wallets[walletName.toLowerCase()];
+        if (typeof walletName === "string") {
+            const wallet = this.wallets[walletName.toLowerCase()];
+        }
         if (!wallet) {
             const errorMessage = `Wallet ${walletName} is not available.`;
             console.error(errorMessage);

@@ -1,10 +1,13 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 import wasm from 'vite-plugin-wasm';
-import path from 'path';  // Add this line
+import path from 'path';
 
-// https://vite.dev/config/
 export default defineConfig({
-  plugins: [wasm()],
+  plugins: [
+    wasm(), // enable WASM integration via the plugin
+    react(),
+  ],
   resolve: {
     alias: {
       '@meshsdk/core': path.resolve(__dirname, 'node_modules/@meshsdk/core'),

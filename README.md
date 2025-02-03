@@ -1,36 +1,45 @@
-# AdaKey Web3 Login - Password-less, Secure Authentication
+# GameKey Web3 Login - Password-less, Secure Authentication
 
-AdaKey Web3 Login offers a revolutionary approach to authentication using the Cardano blockchain. With AdaKey, users can securely log in to decentralized applications (dApps) and platforms without the need for traditional usernames or passwords. Instead, they authenticate using their Cardano wallet’s cryptographic signature. This method not only ensures security but also provides the flexibility of a decentralized identity.
+![GameKey](./GameKey.png)
+![Step 1](./GameKey1.png)
+![Step 2](./GameKey2.png)
+![Step 3](./GameKey3.png)
 
-With AdaKey, you can easily integrate wallet-based login into your platform, enabling secure access to APIs, token-gated content, and more—without compromising user privacy. This solution is ideal for gaming platforms, marketplaces, DAOs, and any application requiring secure, seamless authentication in the Web3 ecosystem.
+GameKey Web3 Login offers a **secure, password-less authentication system** leveraging the **Cardano blockchain**. With GameKey, users authenticate using their **Cardano wallet’s cryptographic signature**, eliminating the need for usernames and passwords while ensuring **maximum security**.
+
+This solution is designed for **dApps, gaming platforms, DAOs, marketplaces**, and any Web3-based application requiring **seamless authentication**. GameKey enables **wallet-based authentication** while maintaining **user privacy and decentralization**. In addition, it supports **asset display**, **PCS login**, and **token gating** for access control.
 
 ---
 
 ## Key Features
-- **Decentralized Identity (DID):** Authenticate users through cryptographic wallet signatures, eliminating the need for centralized credentials.
-- **Stateless JWT Authentication:** No session management needed, making it scalable and efficient.
+
+- **Decentralized Identity (DID):** Authenticate users securely via cryptographic wallet signatures.
+- **Stateless JWT Authentication:** No session storage required, making it highly **scalable**.
 - **Cardano Blockchain Integration:**
-    - Token gating for exclusive access.
-    - ADA handle verification for address identification.
-    - UTXO and asset management for detailed blockchain interactions.
-- **Privacy-Friendly:** No sensitive personal information is collected, aligning with Web3 principles.
-- **Flexible Use Cases:** Perfect for gaming, marketplaces, DAOs, secure payments, and more.
+    - **Token-Gating:** Restrict access to content based on wallet holdings.
+    - **ADA Handle Support:** Verify addresses through ADA Handles.
+    - **PCS Collection Support:** Login via **PCS collections** or **ADA handles**.
+    - **UTXO & Asset Management:** Fetch wallet assets for interaction with smart contracts.
+- **Privacy-Centric:** No personal information is stored, ensuring compliance with Web3 principles.
+- **Multi-Platform Support:** Works across **gaming**, **marketplaces**, **DAOs**, and **DeFi applications**.
+- **Asset Display & Interaction:** Fetch and display assets from a wallet, allowing interaction within the dApp.
 
 ---
 
 ## Installation
 
 ### Prerequisites
-Before getting started, ensure that you have the following installed:
-- **Java JDK 17** or later (for backend)
-- **Node.js** and **npm** (for frontend)
-- **Maven** (for backend build process)
-- **PostgreSQL** (or another compatible database, optional)
+
+Make sure you have the following installed before getting started:
+
+- **Java JDK 17+** (for the backend)
+- **Node.js & npm** (for frontend development)
+- **Maven** (for building the backend)
+- **PostgreSQL** *(optional, for database persistence)*
 
 ### Backend Setup
 
 1. **Clone the Repository:**
-   Begin by cloning the repository to your local machine:
    ```bash
-   git clone https://github.com/PatrickJamesRepo/AdaKey
-   cd AdaKey
+   git clone https://github.com/PatrickJamesRepo/GameKey
+   cd GameKey
