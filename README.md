@@ -3,7 +3,7 @@
 <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
   <img src="Gamekey.png" alt="GameKey" style="width: 45%;"/>
   <img src="Gamekey1.png" alt="Step 1" style="width: 45%;"/>
-  <img src="../../../../../media/patrick/PHILIPS%20SSD/IntelleJProjects/Portfolio/src/main/resources/static/images/Gamekey2.png" alt="Step 2" style="width: 45%;"/>
+  <img src="Gamekey2.png" alt="Step 2" style="width: 45%;"/>
   <img src="Gamekey3.png" alt="Step 3" style="width: 45%;"/>
 </div>
 
