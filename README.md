@@ -1,15 +1,17 @@
 # GameKey Web3 Login - Password-less, Secure Authentication
 
-![GameKey](./GameKey.png)
-![Step 1](./GameKey1.png)
-![Step 2](./GameKey2.png)
-![Step 3](./GameKey3.png)
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+  <img src="Gamekey.png" alt="GameKey" style="width: 45%;"/>
+  <img src="Gamekey1.png" alt="Step 1" style="width: 45%;"/>
+  <img src="Gamekey2.png" alt="Step 2" style="width: 45%;"/>
+  <img src="Gamekey3.png" alt="Step 3" style="width: 45%;"/>
+</div>
 
 GameKey Web3 Login offers a **secure, password-less authentication system** leveraging the **Cardano blockchain**. With GameKey, users authenticate using their **Cardano wallet’s cryptographic signature**, eliminating the need for usernames and passwords while ensuring **maximum security**.
 
 This solution is designed for **dApps, gaming platforms, DAOs, marketplaces**, and any Web3-based application requiring **seamless authentication**. GameKey enables **wallet-based authentication** while maintaining **user privacy and decentralization**. In addition, it supports **asset display**, **PCS login**, and **token gating** for access control.
 
----
+
 
 ## Key Features
 
@@ -24,7 +26,6 @@ This solution is designed for **dApps, gaming platforms, DAOs, marketplaces**, a
 - **Multi-Platform Support:** Works across **gaming**, **marketplaces**, **DAOs**, and **DeFi applications**.
 - **Asset Display & Interaction:** Fetch and display assets from a wallet, allowing interaction within the dApp.
 
----
 
 ## Installation
 
