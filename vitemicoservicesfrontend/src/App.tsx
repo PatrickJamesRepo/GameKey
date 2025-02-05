@@ -1,14 +1,14 @@
+// App.tsx
 import React, { useState, useEffect } from 'react';
 import { Buffer } from 'buffer';
 import { Address, BaseAddress } from '@emurgo/cardano-serialization-lib-browser';
 import Sidebar from './components/Sidebar';
-import AssetGrid from './components/AssetGrid';
+import CollectionGrid from './components/CollectionGrid';
 import useTheme from "./hooks/useTheme";
 import './App.css';
 
-
 const App: React.FC = () => {
-    const { theme, toggleTheme } = useTheme(); // Use theme hook
+    const { theme, toggleTheme } = useTheme();
 
     const [wallet, setWallet] = useState<any>(null);
     const [walletBaseAddress, setWalletBaseAddress] = useState<string | null>(null);
@@ -93,44 +93,71 @@ const App: React.FC = () => {
     // Login (JWT Auth)
     const login = async () => {
         if (!walletBaseAddress) {
-            alert('Please connect your wallet first.');
+            alert("Please connect your wallet first.");
             return;
         }
+
         try {
-            let messageToSign;
             let endpoint = `http://localhost:8080/auth/nonce?base_address=${walletBaseAddress}`;
 
-            if (authMethod === 'ada_handle') {
+            if (authMethod === "ada_handle") {
                 if (!adahandleSelected) {
-                    alert('Select an ADA Handle');
+                    alert("Select an ADA Handle");
                     return;
                 }
                 endpoint += `&ada_handle=${adahandleSelected}`;
-            } else if (authMethod === 'pcs') {
+            } else if (authMethod === "pcs") {
                 if (!pcsCollectionSelected) {
-                    alert('Select a PCS Collection');
+                    alert("Select a PCS Collection");
                     return;
                 }
                 endpoint += `&pcs=${pcsCollectionSelected}`;
             }
 
-            const res = await fetch(endpoint, { method: 'GET', headers: { Accept: 'application/json', 'Content-Type': 'application/json' } });
-            messageToSign = await res.text();
+            // Fetch nonce message to sign
+            const res = await fetch(endpoint, {
+                method: "GET",
+                headers: { Accept: "application/json", "Content-Type": "application/json" },
+            });
+
+            if (!res.ok) {
+                throw new Error(`Failed to fetch nonce: ${res.status}`);
+            }
+
+            const messageToSign = await res.text();
+
+            // Ensure wallet is connected
+            if (!wallet) {
+                alert("Wallet is not connected.");
+                return;
+            }
 
             const addresses = await wallet.getUsedAddresses();
-            const signedData = await wallet.signData(addresses[0], Buffer.from(messageToSign).toString('hex'));
+            if (addresses.length === 0) {
+                alert("No used addresses found.");
+                return;
+            }
 
-            const loginRes = await fetch('http://localhost:8080/auth/login', {
-                method: 'POST',
-                headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+            // Sign data
+            const signedData = await wallet.signData(addresses[0], Buffer.from(messageToSign).toString("hex"));
+
+            // Send signed data to backend for authentication
+            const loginRes = await fetch("http://localhost:8080/auth/login", {
+                method: "POST",
+                headers: { Accept: "application/json", "Content-Type": "application/json" },
                 body: JSON.stringify({ data_signature: JSON.stringify(signedData) }),
             });
+
+            if (!loginRes.ok) {
+                throw new Error(`Login request failed: ${loginRes.status}`);
+            }
 
             const jwt = await loginRes.text();
             setJwtToken(jwt);
             setStep(4);
-        } catch (error) {
-            console.error('Login failed:', error);
+        } catch (error: any) {
+            console.error("Login failed:", error);
+            alert(`Login failed: ${error.message}`);
         }
     };
 
@@ -178,18 +205,24 @@ const App: React.FC = () => {
                 adahandles={adahandles}
                 adahandleSelected={adahandleSelected}
                 setAdahandleSelected={setAdahandleSelected}
-                pcsCollections={PCS_COLLECTIONS} // PCS Collections restored
+                pcsCollections={PCS_COLLECTIONS}
                 pcsCollectionSelected={pcsCollectionSelected}
                 setPcsCollectionSelected={setPcsCollectionSelected}
                 detectWallet={detectWallet}
                 connect={connect}
                 login={login}
                 theme={theme}
-                toggleTheme={toggleTheme} // ✅ Correct
+                toggleTheme={toggleTheme}
             />
 
             <div className="main-content">
-                {loading ? <p>Loading assets...</p> : <AssetGrid assets={walletData?.assets || []}/>}
+                {loading ? (
+                    <p>Loading assets...</p>
+                ) : walletData && walletData.nftCollections ? (
+                    <CollectionGrid nftCollections={walletData.nftCollections} />
+                ) : (
+                    <p>No NFT assets found.</p>
+                )}
             </div>
         </div>
     );

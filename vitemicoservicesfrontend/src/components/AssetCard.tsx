@@ -1,4 +1,5 @@
-import React from 'react';
+// AssetCard.tsx
+import React, { useState } from "react";
 
 interface Asset {
     unit: string;
@@ -7,27 +8,105 @@ interface Asset {
         name?: string;
         description?: string;
         ipfsUrl?: string;
+        collectionName?: string;
+        extraMetadata?: Record<string, any>;
     };
+    ipfsUrl?: string;
+    name?: string;
+    description?: string | null;
+    extraMetadata?: Record<string, any>;
 }
 
 interface AssetCardProps {
     asset: Asset;
 }
 
+/**
+ * Converts an IPFS URL to a fully qualified gateway URL if necessary.
+ * For example, transforms "ipfs://QmUbyuf..." into "https://ipfs.io/ipfs/QmUbyuf..."
+ */
+const normalizeIpfsUrl = (url: string): string => {
+    if (!url) return "";
+    if (url.startsWith("ipfs://")) {
+        return url.replace("ipfs://", "https://ipfs.io/ipfs/");
+    }
+    return url;
+};
+
 const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
+    // Get the IPFS URL from metadata or the top level.
+    const rawIpfsUrl = asset.metadata?.ipfsUrl || asset.ipfsUrl || "";
+    const ipfsUrl = normalizeIpfsUrl(rawIpfsUrl);
+    const [imageError, setImageError] = useState(false);
+    const [showAttributes, setShowAttributes] = useState(false);
+
+    // Display name, quantity, policy ID, and collection name.
+    const displayName = asset.metadata?.name || asset.name || asset.unit;
+    const displayQuantity = asset.quantity;
+    const policyId = asset.unit;
+    const collectionName = asset.metadata?.collectionName || "Unknown Collection";
+
+    // Merge extra metadata from both places.
+    const extraMeta = {
+        ...(asset.metadata?.extraMetadata || {}),
+        ...(asset.extraMetadata || {})
+    };
+
+    // Sort extra metadata keys alphabetically.
+    const sortedKeys = Object.keys(extraMeta).sort();
+
     return (
-        <div className="asset-card">
+        <div className="asset-card small">
             <div className="asset-card-image">
-                {asset.metadata?.ipfsUrl ? (
-                    <img src={asset.metadata.ipfsUrl} alt={asset.metadata?.name || asset.unit} />
+                {ipfsUrl && !imageError ? (
+                    <img
+                        src={ipfsUrl}
+                        alt={displayName}
+                        style={{ width: 200, height: "auto" }}
+                        onError={() => {
+                            console.error("Image failed to load:", ipfsUrl);
+                            setImageError(true);
+                        }}
+                    />
                 ) : (
-                    <div>No Image</div>
+                    <div className="no-image">⚠️ No Image Available</div>
                 )}
             </div>
             <div className="asset-card-content">
-                <h3>{asset.metadata?.name || asset.unit}</h3>
-                <p><strong>Quantity:</strong> {asset.quantity}</p>
+                <h3>{displayName}</h3>
+                <p>
+                    <strong>Quantity:</strong> {displayQuantity}
+                </p>
+                <p className="policy-id">
+                    <strong>Policy ID:</strong> {policyId}
+                </p>
+                <p className="collection-name">
+                    <strong>Collection:</strong> {collectionName}
+                </p>
             </div>
+            {sortedKeys.length > 0 && (
+                <div className="attributes-toggle">
+                    <button
+                        className="toggle-attributes"
+                        onClick={() => setShowAttributes(!showAttributes)}
+                    >
+                        {showAttributes ? "Hide Attributes" : "Show Attributes"}
+                    </button>
+                </div>
+            )}
+            {showAttributes && sortedKeys.length > 0 && (
+                <div className="asset-card-attributes">
+                    <h4>Attributes</h4>
+                    <dl>
+                        {sortedKeys.map((key) => (
+                            <div key={key} className="metadata-row">
+                                <dt className="metadata-key">{key}:</dt>
+                                <dd className="metadata-value">{String(extraMeta[key])}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                </div>
+            )}
         </div>
     );
 };

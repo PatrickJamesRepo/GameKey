@@ -24,6 +24,7 @@
   --card-shadow: rgba(255, 255, 255, 0.1);
 }
 
+/* General Styles */
 body {
   background-color: var(--background);
   color: var(--text-color);
@@ -122,26 +123,30 @@ body {
 /* Asset Grid */
 .asset-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
   padding: 20px;
   width: 100%;
   max-width: 1200px;
+  justify-items: center;
 }
 
-/* Asset Card */
-.asset-card {
+/* Small Asset Card */
+.asset-card.small {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
   border-radius: 10px;
   box-shadow: 0px 4px 6px var(--card-shadow);
-  padding: 15px;
-  text-align: center;
+  padding: 10px;
+  text-align: left;
+  width: 220px;
+  position: relative;
+  overflow: hidden;
   transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
 }
 
-.asset-card:hover {
-  transform: translateY(-5px);
+.asset-card.small:hover {
+  transform: translateY(-3px);
   box-shadow: 0px 6px 10px var(--card-shadow);
 }
 
@@ -166,19 +171,94 @@ body {
 /* Asset Card Content */
 .asset-card-content {
   margin-top: 10px;
+  overflow-wrap: break-word;
 }
 
 .asset-card-content h3 {
   font-size: 16px;
-  margin-bottom: 5px;
+  margin: 0 0 5px;
 }
 
 .asset-card-content p {
+  margin: 3px 0;
   font-size: 14px;
-  color: var(--text-color);
 }
 
-/* Button */
+.policy-id {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Collection Name */
+.collection-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* Attributes Toggle Button */
+.attributes-toggle {
+  margin-top: 5px;
+}
+
+.toggle-attributes {
+  background-color: var(--button-bg);
+  border: 1px solid var(--button-border);
+  padding: 6px 8px;
+  font-size: 12px;
+  color: #000;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 0.3s, border 0.3s;
+}
+
+.toggle-attributes:hover {
+  background-color: var(--button-hover);
+  border-color: var(--button-hover-border);
+}
+
+/* Asset Card Attributes (Toggleable Section) */
+.asset-card-attributes {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--card-border);
+  text-align: left;
+}
+
+.asset-card-attributes h4 {
+  margin: 0 0 4px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+/* Metadata Grid for Attributes */
+.asset-card-attributes dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 4px;
+  margin: 0;
+}
+
+.metadata-row {
+  display: contents;
+}
+
+.metadata-key {
+  font-weight: bold;
+  text-align: right;
+  padding-right: 2px;
+  font-size: 12px;
+}
+
+.metadata-value {
+  text-align: left;
+  font-size: 12px;
+}
+
+/* Button Styles */
 button {
   background-color: var(--button-bg);
   border: 2px solid var(--button-border);
@@ -199,7 +279,7 @@ button:hover {
   transform: translateY(-2px);
 }
 
-/* Ensures all buttons are consistently spaced */
+/* Ensure all buttons are consistently spaced */
 button:not(:last-child) {
   margin-bottom: 10px;
 }
@@ -215,13 +295,13 @@ button:not(:last-child) {
   color: var(--text-color);
   cursor: pointer;
   transition: border-color 0.3s, box-shadow 0.3s ease-in-out;
-  appearance: none; /* Removes default system styling */
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: none;
 }
 
-/* Dropdown Focus & Hover Effect */
-.select:hover, .select:focus {
+.select:hover,
+.select:focus {
   border-color: var(--button-hover-border);
   box-shadow: 0px 4px 8px rgba(255, 255, 255, 0.2);
   outline: none;

@@ -1,5 +1,6 @@
-import React from 'react';
-import AssetCard from './AssetCard.tsx';
+// AssetGrid.tsx
+import React from "react";
+import AssetCard from "./AssetCard";
 
 interface Asset {
     unit: string;
@@ -8,8 +9,12 @@ interface Asset {
         name?: string;
         description?: string;
         ipfsUrl?: string;
-        [key: string]: any;
+        extraMetadata?: Record<string, any>;
     };
+    ipfsUrl?: string;
+    name?: string;
+    description?: string | null;
+    extraMetadata?: Record<string, any>;
 }
 
 interface AssetGridProps {
@@ -19,11 +24,9 @@ interface AssetGridProps {
 const AssetGrid: React.FC<AssetGridProps> = ({ assets }) => {
     return (
         <div className="asset-grid">
-            {assets.length > 0 ? (
-                assets.map((asset, index) => <AssetCard key={`${asset.unit}-${index}`} asset={asset} />)
-            ) : (
-                <p>No assets available.</p>
-            )}
+            {assets.map((asset) => (
+                <AssetCard key={asset.unit} asset={asset} />
+            ))}
         </div>
     );
 };
