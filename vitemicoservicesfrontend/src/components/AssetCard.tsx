@@ -1,5 +1,6 @@
 // AssetCard.tsx
 import React, { useState } from "react";
+import { Asset } from "@meshsdk/core";
 
 interface Asset {
     unit: string;
@@ -19,6 +20,7 @@ interface Asset {
 
 interface AssetCardProps {
     asset: Asset;
+    assetId: string;
 }
 
 /**
@@ -33,7 +35,7 @@ const normalizeIpfsUrl = (url: string): string => {
     return url;
 };
 
-const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
+const AssetCard: React.FC<AssetCardProps> = ({ asset, assetId }) => {
     // Get the IPFS URL from metadata or the top level.
     const rawIpfsUrl = asset.metadata?.ipfsUrl || asset.ipfsUrl || "";
     const ipfsUrl = normalizeIpfsUrl(rawIpfsUrl);
@@ -56,7 +58,7 @@ const AssetCard: React.FC<AssetCardProps> = ({ asset }) => {
     const sortedKeys = Object.keys(extraMeta).sort();
 
     return (
-        <div className="asset-card small">
+        <div className="asset-card small" data-asset-id={assetId}>
             <div className="asset-card-image">
                 {ipfsUrl && !imageError ? (
                     <img

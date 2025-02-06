@@ -4,6 +4,9 @@ import { Buffer } from 'buffer';
 import { Address, BaseAddress } from '@emurgo/cardano-serialization-lib-browser';
 import Sidebar from './components/Sidebar';
 import CollectionGrid from './components/CollectionGrid';
+import GameDashboard from './components/GameDashboard';
+import DashboardModal from './components/DashboardModal';
+
 import useTheme from "./hooks/useTheme";
 import './App.css';
 
@@ -33,6 +36,22 @@ const App: React.FC = () => {
     // Asset & Metadata State
     const [loading, setLoading] = useState<boolean>(false);
     const [walletData, setWalletData] = useState<any>(null);
+
+    // Dashboard Modal State
+    const [dashboardOpen, setDashboardOpen] = useState<boolean>(false);
+
+    // Dummy game dashboard data (update with real values as needed)
+    const score = 1000;
+    const gamesPlayed = 25;
+    const statistics = {
+        "Total Games": 25,
+        "Wins": 10,
+        "Losses": 15,
+    };
+
+    const handleMint = () => {
+        console.log("Mint GameKey Token clicked!");
+    };
 
     // Detect Available Wallets
     const detectWallet = async () => {
@@ -126,7 +145,6 @@ const App: React.FC = () => {
 
             const messageToSign = await res.text();
 
-            // Ensure wallet is connected
             if (!wallet) {
                 alert("Wallet is not connected.");
                 return;
@@ -213,6 +231,9 @@ const App: React.FC = () => {
                 login={login}
                 theme={theme}
                 toggleTheme={toggleTheme}
+                // Show Dashboard button only if wallet is connected and we have NFT assets
+                showDashboardButton={walletBaseAddress !== null && walletData && walletData.nftCollections}
+                openDashboard={() => setDashboardOpen(true)}
             />
 
             <div className="main-content">
@@ -224,6 +245,17 @@ const App: React.FC = () => {
                     <p>No NFT assets found.</p>
                 )}
             </div>
+
+            {dashboardOpen && walletBaseAddress && (
+                <DashboardModal
+                    walletAddress={walletBaseAddress}
+                    score={score}
+                    gamesPlayed={gamesPlayed}
+                    statistics={statistics}
+                    onClose={() => setDashboardOpen(false)}
+                    onMint={handleMint}
+                />
+            )}
         </div>
     );
 };

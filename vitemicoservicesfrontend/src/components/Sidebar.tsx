@@ -1,3 +1,4 @@
+// Sidebar.tsx
 import React from 'react';
 
 interface SidebarProps {
@@ -17,6 +18,8 @@ interface SidebarProps {
     pcsCollections: { id: string; name: string }[];
     theme: 'light' | 'dark';
     toggleTheme: () => void;
+    showDashboardButton: boolean;
+    openDashboard: () => void;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({
@@ -36,12 +39,14 @@ const Sidebar: React.FC<SidebarProps> = ({
                                              pcsCollections,
                                              theme,
                                              toggleTheme,
+                                             showDashboardButton,
+                                             openDashboard,
                                          }) => {
     return (
         <aside className="sidebar">
             <h2>GameKey</h2>
 
-            {/* Light/Dark Mode Toggle - Always Visible */}
+            {/* Light/Dark Mode Toggle */}
             <button className="theme-toggle" onClick={toggleTheme}>
                 {theme === "light" ? "🌙 Dark Mode" : "☀️ Light Mode"}
             </button>
@@ -65,12 +70,11 @@ const Sidebar: React.FC<SidebarProps> = ({
                 </div>
             )}
 
-            {/* Step 3 & 4: Authentication & Login */}
+            {/* Steps 3 & 4: Authentication & Login */}
             {step >= 3 && walletType && (
                 <div>
                     <h3>Authentication Method:</h3>
                     <div className="auth-options">
-                        {/* Authentication Buttons */}
                         <button
                             className={`button ${authMethod === 'base_address' ? "active" : ""}`}
                             onClick={() => setAuthMethod('base_address')}
@@ -91,7 +95,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </button>
                     </div>
 
-                    {/* ADA Handle Selection */}
                     {authMethod === 'ada_handle' && (
                         <div className="dropdown-wrapper">
                             <label>Select ADA Handle:</label>
@@ -112,7 +115,6 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                     )}
 
-                    {/* PCS Collection Selection */}
                     {authMethod === 'pcs' && (
                         <div className="dropdown-wrapper">
                             <label>Select PCS Collection:</label>
@@ -133,11 +135,17 @@ const Sidebar: React.FC<SidebarProps> = ({
                         </div>
                     )}
 
-                    {/* Step 4: Login Button */}
                     <button onClick={login} className="button" disabled={step >= 4 || !authMethod}>
                         Login
                     </button>
                 </div>
+            )}
+
+            {/* Dashboard Button */}
+            {showDashboardButton && (
+                <button onClick={openDashboard} className="button dashboard-button">
+                    Dashboard
+                </button>
             )}
         </aside>
     );
