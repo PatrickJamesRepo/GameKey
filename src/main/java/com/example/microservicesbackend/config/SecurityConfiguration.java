@@ -1,8 +1,6 @@
 package com.example.microservicesbackend.config;
 
-import com.example.microservicesbackend.MicroServicesMain.*;
-import com.example.microservicesbackend.config.JwtAuthenticationEntryPoint;
-import com.example.microservicesbackend.service.JwtFilter;
+import com.example.microservicesbackend.service.DidService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,13 +12,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.stereotype.Component;
-
 import java.io.IOException;
+import org.springframework.security.core.AuthenticationException;
 
 @Configuration
 @EnableWebSecurity
@@ -29,7 +26,6 @@ public class SecurityConfiguration {
 
     @Component
     public static class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
-
         @Override
         public void commence(HttpServletRequest request, HttpServletResponse response,
                              AuthenticationException authException) throws IOException {
@@ -38,11 +34,10 @@ public class SecurityConfiguration {
     }
 
     @Autowired
-    private JwtFilter jwtFilter;
+    private DidService didService; // Inject our DidService
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        AuthenticationEntryPoint jwtAuthenticationEntryPoint = null;
         http
                 .cors().and()
                 .csrf().disable()
@@ -50,11 +45,12 @@ public class SecurityConfiguration {
                 .requestMatchers("/auth/**", "/public/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                .exceptionHandling().authenticationEntryPoint(new JwtAuthenticationEntryPoint())
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+        // Replace the JwtFilter with our DidFilter
+        http.addFilterBefore(new DidFilter(didService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
