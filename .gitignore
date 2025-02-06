@@ -34,3 +34,5 @@ build/
 
 .env.dev
 .env.prod
+# Ignore environment files
+.env .env.* config/.env vitemicoservicesfrontend/src/vite-env.d.ts
