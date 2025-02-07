@@ -25,7 +25,7 @@ import org.springframework.security.core.AuthenticationException;
 public class SecurityConfiguration {
 
     @Component
-    public static class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
+    public static class DidAuthenticationEntryPoint implements AuthenticationEntryPoint {
         @Override
         public void commence(HttpServletRequest request, HttpServletResponse response,
                              AuthenticationException authException) throws IOException {
@@ -45,11 +45,11 @@ public class SecurityConfiguration {
                 .requestMatchers("/auth/**", "/public/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
-                .exceptionHandling().authenticationEntryPoint(new JwtAuthenticationEntryPoint())
+                .exceptionHandling().authenticationEntryPoint(new DidAuthenticationEntryPoint())
                 .and()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
-        // Replace the JwtFilter with our DidFilter
+        // Add the DidFilter which will validate the DID token from the Authorization header
         http.addFilterBefore(new DidFilter(didService), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

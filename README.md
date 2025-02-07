@@ -1,63 +1,112 @@
-# GameKey Web3 DDID(Decentralized Digital Identity) Login - Password-less, Secure Authentication
+# GameKey Web3 DDID (Decentralized Digital Identity) Login - Password-less, Secure Authentication
 
-<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
-  <img src="Gamekey.png" alt="GameKey" style="width: 45%;"/>
-  <img src="Gamekey1.png" alt="Step 1" style="width: 45%;"/>
-  <img src="Gamekey2.png" alt="Step 2" style="width: 45%;"/>
-  <img src="Gamekey3.png" alt="Step 3" style="width: 45%;"/>
+[![Java](https://img.shields.io/badge/Java-17%2B-blue.svg)](https://www.oracle.com/java/)
+[![Maven](https://img.shields.io/badge/Maven-3.8%2B-green.svg)](https://maven.apache.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-14%2B-brightgreen.svg)](https://nodejs.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/PatrickJamesRepo/GameKey/build.yml?branch=main)](https://github.com/PatrickJamesRepo/GameKey/actions)
+
+<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+  <img src="Gamekey.png" alt="GameKey" style="width: 90%;"/>
+  <img src="Gamekey1.png" alt="Step 1" style="width: 90%;"/>
+  <img src="Gamekey2.png" alt="Step 2" style="width: 90%;"/>
+  <img src="Gamekey3.png" alt="Step 3" style="width: 90%;"/>
+  <img src="Chart.png" alt="Flowchart" style="width: 90%;"/>
 </div>
 
-GameKey Web3 Login offers a **secure, password-less authentication system** leveraging the **Cardano blockchain**. With GameKey, users authenticate using their **Cardano wallet’s cryptographic signature**, eliminating the need for usernames and passwords while ensuring **maximum security** and **privacy**. This solution is ideal for **dApps, gaming platforms, DAOs, marketplaces**, and any Web3-based application requiring **seamless, decentralized authentication**.
+GameKey Web3 Login provides a secure, password-less authentication system by leveraging the Cardano blockchain. Users authenticate using their Cardano wallet’s cryptographic signature, thereby eliminating the need for traditional credentials while maintaining maximum security and privacy. This solution is ideal for dApps, gaming platforms, DAOs, marketplaces, and other Web3 applications that require seamless, decentralized authentication.
 
-> **Note:** This version uses a **Decentralized Identifier (DID)** approach instead of traditional JWT tokens. Users sign a nonce with their wallet’s private key, and the backend generates a DID token from their Cardano address. This ensures a fully stateless and decentralized authentication flow.
+> **Note:** This implementation uses a Decentralized Identifier (DID) approach rather than traditional JWT tokens. Users sign a nonce with their wallet’s private key, and the backend generates a DID token based on their Cardano address. In addition, a zk‑SNARK proof is generated to validate the signature without exposing sensitive information, ensuring a stateless and privacy-preserving authentication flow.
 
 ---
 
 ## Key Features
 
 - **Decentralized Identity (DID):**  
-  Authenticate users via cryptographic wallet signatures. The backend derives a unique DID token from the Cardano wallet’s base address (Bech32 format), ensuring that authentication is decentralized and user-controlled.
+  Authenticate users through cryptographic wallet signatures. A unique DID token is derived from the Cardano wallet’s base address (in Bech32 format), ensuring that authentication remains decentralized and user-controlled.
 
-- **Stateless Decentralized Authentication:**  
-  Eliminate session storage and traditional JWT tokens. The DID token is generated on-demand and verified on each request without any centralized session management.
+- **Stateless Authentication:**  
+  Eliminate the need for session storage and traditional JWT tokens. The DID token is generated on demand and verified with every request, avoiding centralized session management.
 
 - **Cardano Blockchain Integration:**
     - **Token-Gating:** Restrict access based on wallet holdings.
-    - **ADA Handle Support:** Verify addresses through ADA Handles.
-    - **PCS Collection Support:** Login via PCS collections or ADA handles.
-    - **UTXO & Asset Management:** Fetch and display wallet assets for seamless interaction with smart contracts.
+    - **ADA Handle Support:** Verify addresses using ADA Handles.
+    - **PCS Collection Support:** Support login via PCS collections or ADA handles.
+    - **UTXO & Asset Management:** Retrieve and display wallet assets to enable seamless interaction with smart contracts.
 
-- **Privacy-Centric:**  
-  No personal data is stored on the server. The system relies solely on cryptographic proofs from the Cardano wallet, aligning with core Web3 privacy principles.
+- **Zero-Knowledge Proof (zk‑SNARK) Integration:**  
+  Enhance privacy with a succinct zero‑knowledge proof. This zk‑SNARK confirms that the user has signed the nonce with the correct private key without revealing any sensitive data.
+
+- **Privacy-Centric Architecture:**  
+  No personal data is stored on the server. Authentication relies solely on cryptographic proofs from the Cardano wallet, adhering to core Web3 privacy principles.
 
 - **Multi-Platform Support:**  
-  Designed for use across **gaming platforms**, **marketplaces**, **DAOs**, **DeFi applications**, and other decentralized applications.
+  Designed for gaming platforms, marketplaces, DAOs, DeFi applications, and other decentralized applications.
 
 - **Asset Display & Interaction:**  
-  Retrieve wallet assets (UTXOs, tokens) and enable interaction with on-chain smart contracts, making it easy to integrate with various Web3 functionalities.
+  Retrieve wallet assets (UTXOs, tokens) and facilitate interaction with on-chain smart contracts.
 
 ---
 
 ## How It Works
 
 1. **Nonce Generation:**  
-   When a user initiates login, the backend generates a unique nonce (a random challenge string) tied to the user's Cardano base address.
-    - The nonce includes additional options such as ADA handle and PCS policy IDs.
-    - This nonce is stored temporarily and sent back to the client.
+   When a login is initiated, the backend generates a unique nonce (a random challenge string) associated with the user's Cardano base address.
+    - The nonce may include additional parameters such as ADA handle and PCS policy IDs.
+    - The generated nonce is stored temporarily and then sent to the client.
 
-2. **Signature & Authentication:**  
-   The user connects their Cardano wallet and is prompted to sign the nonce with their private key.
-    - The signed nonce (data signature) is then sent back to the backend.
-    - The backend verifies the signature using CIP-30 standards. If the signature is valid and the nonce matches, authentication is successful.
+2. **Signature & Authentication with zk‑SNARK:**  
+   The user connects their Cardano wallet and is prompted to sign the nonce using their private key.
+    - The resulting signed nonce (data signature) is transmitted back to the backend.
+    - The backend verifies the signature according to CIP‑30 standards.
+    - **Zero-Knowledge Proof Generation:**  
+      In parallel, a zk‑SNARK proof is created, demonstrating that the nonce was signed correctly without revealing the private key or other sensitive information.
 
 3. **DID Token Generation:**  
-   Instead of issuing a JWT, the backend generates a **Decentralized Identifier (DID) token** by hashing the user’s Cardano base address.
-    - This DID token is then returned to the client as proof of authentication.
-    - For subsequent API calls, the client includes the DID token (e.g., in the `Authorization` header as `DID <token>`).
+   Rather than issuing a JWT, the backend generates a Decentralized Identifier (DID) token by hashing the user's Cardano base address.
+    - The resulting DID token (formatted as `did:cardano:<hash>`) is returned to the client as proof of authentication.
+    - For subsequent API calls, the client includes the DID token in the `Authorization` header (e.g., `Authorization: DID <token>`).
 
 4. **Secured API Access:**  
-   A custom security filter intercepts requests, extracts the DID token, and verifies that it matches the expected format.
-    - If valid, the request is allowed to proceed; otherwise, the user receives an unauthorized error.
+   A custom security filter intercepts incoming requests, extracts the DID token, and verifies that it conforms to the expected format.
+    - If valid, the request is permitted; otherwise, the system returns an unauthorized error.
+
+---
+
+## Software Design Principles
+
+To ensure a robust, maintainable, and scalable authentication system, GameKey adheres to modern software design practices and the SOLID principles:
+
+### SOLID Principles
+
+- **Single Responsibility Principle (SRP):**  
+  Each module (e.g., authentication controller, DID service, security filter) is responsible for a single aspect of the system, enhancing clarity, testability, and maintainability.
+
+- **Open/Closed Principle (OCP):**  
+  Components are designed to be extensible without requiring modification to existing code, facilitating the addition of new authentication methods or wallet integrations.
+
+- **Liskov Substitution Principle (LSP):**  
+  Different wallet implementations (e.g., Nami, Flint) can be substituted without affecting system behavior.
+
+- **Interface Segregation Principle (ISP):**  
+  Interfaces are narrowly defined to ensure components only depend on the functionality they require.
+
+- **Dependency Inversion Principle (DIP):**  
+  High-level modules depend on abstractions rather than concrete implementations, decoupling components and promoting flexibility and easier testing.
+
+### Additional Design Principles
+
+- **Separation of Concerns:**  
+  The system separates responsibilities among the frontend, backend, and smart contract layers, reducing complexity and improving modularity.
+
+- **Decoupling & Modularity:**  
+  By utilizing DID tokens for stateless authentication and integrating zk‑SNARK proofs, the authentication process is decoupled from session management, enhancing security and scalability.
+
+- **Scalability:**  
+  The architecture is designed to accommodate future features (e.g., multi-wallet support, token gating, on-chain verification) as the system evolves.
+
+- **Security by Design:**  
+  Emphasis on cryptographic verification and zero-knowledge proofs ensures that the authentication process maintains high security and privacy standards throughout.
 
 ---
 
@@ -65,7 +114,7 @@ GameKey Web3 Login offers a **secure, password-less authentication system** leve
 
 ### Prerequisites
 
-Ensure you have the following installed before getting started:
+Before getting started, ensure you have the following installed:
 
 - **Java JDK 17+** (for the backend)
 - **Node.js & npm** (for frontend development)
