@@ -2,7 +2,7 @@
 [![Maven](https://img.shields.io/badge/Maven-3.8%2B-green.svg)](https://maven.apache.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-14%2B-brightgreen.svg)](https://nodejs.org/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/PatrickJamesRepo/GameKey/build.yml?branch=main)](https://github.com/PatrickJamesRepo/GameKey/actions)
+
 
 # GameKey Web3 DDID (Decentralized Digital Identity) Login - Password-less, Secure Authentication
 
